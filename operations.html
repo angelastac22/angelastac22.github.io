@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Operations Intelligence · Ángela Santa Cruz</title>
+  <meta name="description" content="Dashboard interactivo de operaciones logísticas con datos sintéticos: entregas a tiempo, costes y retrasos por ruta y almacén.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html">Ángela Santa Cruz</a>
+    <nav>
+      <a href="index.html#proyectos" aria-current="page">Proyectos</a>
+      <a href="index.html#perfil">Perfil</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="page-head">
+      <h1>Operations Intelligence</h1>
+      <p><b>El problema.</b> Una empresa de distribución gestiona miles de pedidos, pero la información está repartida y nadie tiene claro dónde se pierden las entregas a tiempo.</p>
+      <p><b>Lo que hace esta herramienta.</b> Convierte la tabla de pedidos en indicadores, comparativas y una lectura automática. Puedes filtrar y comprobar por tu cuenta dónde se concentran los retrasos.</p>
+      <p class="notice">Todos los datos son sintéticos: los generé con un script de Python para este proyecto. No pertenecen a ninguna empresa real, y es un proyecto personal, no experiencia laboral.</p>
+    </section>
+
+    <div class="filters" role="search" aria-label="Filtros del dashboard">
+      <div class="field"><label for="f-from">Desde</label><input type="date" id="f-from"></div>
+      <div class="field"><label for="f-to">Hasta</label><input type="date" id="f-to"></div>
+      <div class="field"><label for="f-route">Ruta</label><select id="f-route"><option value="all">Todas</option></select></div>
+      <div class="field"><label for="f-wh">Almacén</label><select id="f-wh"><option value="all">Todos</option></select></div>
+      <div class="field"><label for="f-status">Estado</label><select id="f-status"><option value="all">Todos</option></select></div>
+      <button class="btn" id="reset" type="button">Restablecer filtros</button>
+    </div>
+
+    <div class="kpis" aria-live="polite">
+      <div class="kpi"><b id="k-orders">—</b><span>Pedidos</span></div>
+      <div class="kpi"><b id="k-ontime">—</b><span>Entregas a tiempo</span></div>
+      <div class="kpi"><b id="k-cost">—</b><span>Coste medio por pedido</span></div>
+      <div class="kpi"><b id="k-delay">—</b><span>Retraso medio (solo tardías)</span></div>
+    </div>
+
+    <div class="insight" id="insights" aria-live="polite"></div>
+
+    <div class="charts">
+      <section class="panel wide">
+        <h3>¿Cómo evoluciona el cumplimiento mes a mes?</h3>
+        <div id="c-line"></div>
+      </section>
+      <section class="panel">
+        <h3>¿Qué rutas cumplen menos?</h3>
+        <div id="c-bars"></div>
+      </section>
+      <section class="panel">
+        <h3>¿Dónde se concentra el problema? (almacén y ruta)</h3>
+        <div id="c-heat"></div>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top:16px">
+      <h3>Pedidos filtrados <span class="count" id="count"></span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pedido</th><th>Fecha</th><th>Prometida</th><th>Entrega</th>
+              <th>Ruta</th><th>Almacén</th><th class="num">Coste</th><th>Estado</th><th class="num">Retraso</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-actions">
+        <button class="btn" id="more" type="button">Mostrar más</button>
+        <button class="btn" id="dl" type="button">Descargar CSV filtrado</button>
+      </div>
+    </section>
+
+    <section class="panel method" style="margin-top:16px">
+      <h3>Cómo se calculan los indicadores</h3>
+      <dl>
+        <dt>Entrega a tiempo</dt>
+        <dd>Pedido «Entregado» cuya fecha de entrega es igual o anterior a la fecha prometida. El porcentaje se calcula sobre los pedidos entregados.</dd>
+        <dt>Retraso medio</dt>
+        <dd>Media de días de retraso solo de las entregas que llegaron tarde, para que no se diluya con las puntuales.</dd>
+        <dt>Coste medio</dt>
+        <dd>Media del coste de los pedidos filtrados, sin contar los cancelados.</dd>
+        <dt>Pedidos en tránsito y cancelados</dt>
+        <dd>Cuentan como pedidos, pero no entran en el cumplimiento porque aún no tienen entrega.</dd>
+        <dt>Limitaciones</dt>
+        <dd>Los datos son simulados y tienen patrones introducidos a propósito (ruta Sur, almacén Centro B y campaña de noviembre-diciembre). Las conclusiones ilustran el método; no describen ninguna empresa real.</dd>
+      </dl>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>© 2026 Ángela Santa Cruz López</p>
+    <p><a href="index.html">← Volver al portfolio</a></p>
+  </div>
+</footer>
+
+<script src="data/orders.js"></script>
+<script src="assets/js/dashboard.js"></script>
+</body>
+</html>
