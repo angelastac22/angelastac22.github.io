@@ -1,5 +1,5 @@
 """
-Carga data/orders.csv en una base SQLite y ejecuta sql/queries.sql.
+Carga orders.csv en una base SQLite y ejecuta queries.sql.
 
 Ejecuta:  python load_sqlite.py
 No necesita instalar nada: sqlite3 viene incluido con Python.
@@ -8,8 +8,8 @@ import csv
 import sqlite3
 from pathlib import Path
 
-root = Path(__file__).resolve().parent.parent
-db_path = root / "data" / "orders.db"
+root = Path(__file__).resolve().parent
+db_path = root / "orders.db"
 
 con = sqlite3.connect(db_path)
 con.execute("DROP TABLE IF EXISTS orders")
@@ -21,7 +21,7 @@ con.execute("""
     )
 """)
 
-with open(root / "data" / "orders.csv", encoding="utf-8") as f:
+with open(root / "orders.csv", encoding="utf-8") as f:
     rows = [
         (r["order_id"], r["order_date"], r["promised_date"], r["delivery_date"] or None,
          r["route"], r["warehouse"], float(r["order_cost"]), r["status"])
@@ -32,7 +32,7 @@ con.commit()
 print(f"{len(rows)} pedidos cargados en {db_path}\n")
 
 # Ejecuta cada consulta del archivo y muestra el resultado
-sql = (root / "sql" / "queries.sql").read_text(encoding="utf-8")
+sql = (root / "queries.sql").read_text(encoding="utf-8")
 for block in sql.split(";"):
     lines = [l for l in block.strip().splitlines()]
     query = "\n".join(l for l in lines if not l.strip().startswith("--")).strip()

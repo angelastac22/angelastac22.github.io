@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de picking · Ángela Santa Cruz</title>
+  <meta name="description" content="Simulador interactivo que compara estrategias de preparación de pedidos en almacén (por pedido, por lotes y por zonas) con datos sintéticos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html">Ángela Santa Cruz</a>
+    <nav>
+      <a href="index.html#proyectos" aria-current="page">Proyectos</a>
+      <a href="index.html#perfil">Perfil</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="page-head">
+      <h1>Simulador de picking</h1>
+      <p><b>El problema.</b> Preparar pedidos en un almacén es una de las tareas que más tiempo consume, y casi todo ese tiempo se va en caminar. Hay varias formas de organizar el trabajo y cada una tiene ventajas y costes.</p>
+      <p><b>Lo que hace esta herramienta.</b> Genera pedidos aleatorios, calcula la ruta de cada persona por los pasillos y compara tres estrategias: preparar pedido a pedido, agrupar pedidos en lotes o dividir el almacén en zonas. Cambia los parámetros y mira cómo se mueven los resultados.</p>
+      <p><b>De dónde viene.</b> Mi trabajo fin de máster (Universidad Europea, 2025) simulaba en lenguaje C un almacén sencillo de 5×5 posiciones, con una sola persona y picking secuencial, para medir cuánto se camina por pedido. Proponía como mejoras ir siempre al producto más cercano, reorganizar el inventario, preparar por zonas y agrupar pedidos. Este simulador pone a prueba esas cuatro ideas en un almacén más realista y con varias personas.</p>
+      <p class="notice">Es un modelo simplificado con datos sintéticos que he construido para este proyecto. Sirve para entender el comportamiento de cada estrategia, no para dimensionar un almacén real.</p>
+    </section>
+
+    <div class="filters" role="group" aria-label="Parámetros de la simulación">
+      <div class="field"><label for="p-orders">Pedidos: <b id="o-orders"></b></label><input type="range" id="p-orders" min="50" max="1000" step="50" value="300"></div>
+      <div class="field"><label for="p-lines">Líneas por pedido (media): <b id="o-lines"></b></label><input type="range" id="p-lines" min="1" max="10" step="1" value="4"></div>
+      <div class="field"><label for="p-pickers">Personas preparando: <b id="o-pickers"></b></label><input type="range" id="p-pickers" min="1" max="6" step="1" value="3"></div>
+      <div class="field"><label for="p-batch">Pedidos por lote: <b id="o-batch"></b></label><input type="range" id="p-batch" min="2" max="10" step="1" value="5"></div>
+      <div class="field"><label for="p-layout">Colocación de productos</label>
+        <select id="p-layout">
+          <option value="random">Repartidos al azar</option>
+          <option value="abc">Los más pedidos, cerca de la entrada</option>
+        </select>
+      </div>
+      <div class="field"><label for="p-route">Cómo se elige la ruta</label>
+        <select id="p-route">
+          <option value="s">Recorrido en S por los pasillos</option>
+          <option value="nn">Siempre al producto más cercano</option>
+          <option value="list">Sin optimizar: en el orden de la lista</option>
+        </select>
+      </div>
+      <button class="btn" id="again" type="button">Nuevos pedidos</button>
+      <button class="btn" id="reset" type="button">Restablecer</button>
+    </div>
+    <p class="muted small" style="margin:8px 2px 0">Simulación número <span id="seed"></span>. Las tres estrategias preparan exactamente los mismos pedidos, para que la comparación sea justa.</p>
+
+    <div class="insight" id="insights" aria-live="polite"></div>
+
+    <section class="panel" style="margin-top:16px">
+      <h3>Resultados por estrategia</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Estrategia</th><th class="num">Distancia total</th><th class="num">Distancia por pedido</th><th class="num">Tiempo para terminar</th><th class="num">Pedidos por hora</th></tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="charts">
+      <section class="panel">
+        <h3>¿Cuánto se camina por pedido?</h3>
+        <div id="c-dist"></div>
+      </section>
+      <section class="panel">
+        <h3>¿Cuánto se tarda en preparar todos los pedidos?</h3>
+        <div id="c-time"></div>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top:16px">
+      <div class="panel-head">
+        <h3>Así se recorre el almacén</h3>
+        <div class="field inline">
+          <label for="p-view">Ver ruta de</label>
+          <select id="p-view">
+            <option value="single">Picking por pedido</option>
+            <option value="batch">Picking por lotes</option>
+            <option value="zone">Picking por zonas</option>
+          </select>
+        </div>
+      </div>
+      <div id="c-map" class="map"></div>
+      <p class="muted small" id="map-note"></p>
+    </section>
+
+    <section class="panel method" style="margin-top:16px">
+      <h3>Cómo funciona y qué supone</h3>
+      <dl>
+        <dt>Almacén</dt>
+        <dd><span id="a-layout"></span>, con la entrada en la esquina inferior izquierda. Las distancias se miden por los pasillos, sin atravesar las estanterías. Cada pedido tiene entre 1 y el doble de la media menos uno líneas, y cada línea es un producto en una posición.</dd>
+        <dt>Ruta</dt>
+        <dd>Se puede elegir cómo se recorre el almacén. <b>Sin optimizar</b> visita los productos en el orden en que aparecen en el pedido, como el modelo base de mi TFM. <b>Siempre al más cercano</b> va cada vez al producto más próximo que queda. <b>Recorrido en S</b> recorre entero cada pasillo con productos, alternando el sentido, y vuelve a la entrada. Ninguna es la ruta óptima, que sería mucho más costosa de calcular.</dd>
+        <dt>Tiempos</dt>
+        <dd>Se camina a <span id="a-speed"></span>. Coger cada línea lleva <span id="a-pick"></span> y empezar y cerrar cada ruta, <span id="a-trip"></span>.</dd>
+        <dt>Por lotes</dt>
+        <dd>Los pedidos se agrupan por la zona del almacén donde están sus productos y se preparan juntos. Después hay que clasificar cada producto en su pedido, lo que añade <span id="a-sort"></span>.</dd>
+        <dt>Por zonas</dt>
+        <dd>El almacén se divide en tantas zonas como personas. Cada persona prepara solo su parte de cada pedido, y empezar la ruta de un pedido cuesta lo mismo que antes y cada zona adicional que toca el pedido añade <span id="a-consol"></span> por pasar la caja a la siguiente.</dd>
+        <dt>Tiempo para terminar</dt>
+        <dd>Las rutas se reparten entre las personas intentando equilibrar la carga, y el resultado es lo que tarda la persona más cargada. Si no se equilibra bien, el tiempo real sería mayor.</dd>
+        <dt>Limitaciones</dt>
+        <dd>No hay tráfico entre personas, esperas, límite de capacidad del carro, restricciones de peso ni pedidos urgentes, y los lotes no se cierran por peso o volumen. Las conclusiones dependen de estos supuestos y de la colocación de los productos, que puedes cambiar arriba.</dd>
+      </dl>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>© 2026 Ángela Santa Cruz López</p>
+    <p><a href="index.html">← Volver al portfolio</a></p>
+  </div>
+</footer>
+
+<script src="picking.js"></script>
+</body>
+</html>

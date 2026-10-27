@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Informes automáticos · Ángela Santa Cruz</title>
+  <meta name="description" content="Herramienta que lee archivos CSV, detecta errores en los datos, los limpia y genera un informe con indicadores. Funciona en el navegador, sin subir los archivos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html">Ángela Santa Cruz</a>
+    <nav>
+      <a href="index.html#proyectos" aria-current="page">Proyectos</a>
+      <a href="index.html#perfil">Perfil</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="page-head">
+      <h1>Informes automáticos</h1>
+      <p><b>El problema.</b> Cada semana llegan archivos de distintas zonas, con formatos distintos y errores: filas repetidas, importes vacíos, fechas imposibles o la misma ciudad escrita de tres formas. Revisarlos a mano lleva horas y siempre se escapa algo.</p>
+      <p><b>Lo que hace esta herramienta.</b> Lee uno o varios archivos CSV, los une, detecta las incidencias, limpia lo que se puede corregir sin riesgo y genera un informe con las conclusiones. Después puedes descargar los datos limpios y la lista de incidencias.</p>
+      <p class="notice">Los archivos se procesan en tu navegador y no se envían a ningún sitio. Los datos de ejemplo son inventados, con errores puestos a propósito. Es un proyecto personal, no experiencia laboral.</p>
+    </section>
+
+    <label class="drop" id="drop" for="file-input">
+      <b>Suelta aquí tus archivos CSV o pulsa para elegirlos</b>
+      <span class="muted">Pueden ser varios a la vez, siempre que tengan las mismas columnas.</span>
+      <input type="file" id="file-input" accept=".csv,.txt" multiple>
+    </label>
+
+    <div class="btn-row">
+      <button class="btn primary" id="btn-sample" type="button">Probar con datos de ejemplo</button>
+      <button class="btn hidden" id="btn-clear" type="button">Quitar archivos</button>
+    </div>
+    <p class="muted small" style="margin:12px 2px 0">También puedes descargar los archivos de ejemplo y subirlos tú:
+      <a href="ejemplo_pedidos_norte.csv" download>zona Norte</a> ·
+      <a href="ejemplo_pedidos_sur.csv" download>zona Sur</a>.
+      Una usa comas y puntos decimales; la otra, punto y coma y comas decimales, y la herramienta lo detecta sola.</p>
+
+    <ul class="file-list" id="file-list"></ul>
+
+    <div id="results" class="hidden">
+      <div class="kpis" aria-live="polite">
+        <div class="kpi"><b id="k-files">—</b><span>Archivos leídos</span></div>
+        <div class="kpi"><b id="k-rows">—</b><span>Filas leídas</span></div>
+        <div class="kpi"><b id="k-clean">—</b><span>Filas tras la limpieza</span></div>
+        <div class="kpi"><b id="k-ok">—</b><span>Filas sin ningún problema</span></div>
+      </div>
+
+      <div class="insight" id="insights" aria-live="polite"></div>
+
+      <section class="panel" style="margin-top:16px">
+        <h3>Comprobaciones realizadas</h3>
+        <ul class="checks" id="checks"></ul>
+      </section>
+
+      <section class="hidden" id="summary">
+        <div class="kpis" style="margin-top:16px">
+          <div class="kpi"><b id="s-all">—</b><span>Total de <span id="s-name"></span></span></div>
+          <div class="kpi"><b id="s-good">—</b><span>Total sin valores marcados</span></div>
+          <div class="kpi"><b id="s-avg">—</b><span>Media sin valores marcados</span></div>
+        </div>
+        <p class="muted small" id="s-note" style="margin:8px 2px 0"></p>
+        <div class="charts" id="cat-charts"></div>
+        <section class="panel hidden" id="month-panel" style="margin-top:16px">
+          <h3 id="month-title"></h3>
+          <div id="c-month"></div>
+        </section>
+      </section>
+
+      <section class="panel hidden" id="inc-panel" style="margin-top:16px">
+        <h3>Incidencias detectadas <span class="count" id="inc-count"></span></h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Gravedad</th><th>Tipo</th><th>Archivo</th><th class="num">Fila</th><th>Columna</th><th>Valor</th><th>Detalle</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-actions"><button class="btn hidden" id="more" type="button">Mostrar más</button></div>
+      </section>
+
+      <div class="report-actions">
+        <button class="btn primary" id="dl-clean" type="button">Descargar datos limpios (CSV)</button>
+        <button class="btn" id="dl-inc" type="button">Descargar incidencias (CSV)</button>
+        <button class="btn" id="print" type="button">Guardar informe en PDF</button>
+      </div>
+    </div>
+
+    <section class="panel method" style="margin-top:24px">
+      <h3>Qué comprueba y qué corrige</h3>
+      <dl>
+        <dt>Filas duplicadas</dt>
+        <dd>Filas idénticas, aunque cambien las mayúsculas o los espacios, también entre archivos distintos. Se conserva la primera y se eliminan las demás.</dd>
+        <dt>Valores vacíos, números ilegibles y fechas no válidas</dt>
+        <dd>Se detectan y se listan, pero no se rellenan: inventar un dato sería peor que dejarlo marcado. Las fechas se reconocen en formato AAAA-MM-DD y DD/MM/AAAA, y los números con coma o punto decimal.</dd>
+        <dt>Importes negativos y atípicos</dt>
+        <dd>Se marcan para revisar. Un valor es atípico cuando está muy por encima o por debajo del rango habitual de su columna. En los totales del informe se dejan fuera y se explica cuántos son.</dd>
+        <dt>Variantes de escritura</dt>
+        <dd>«SANTANDER», « santander» y «Santander» se unifican con la forma más frecuente en esa columna.</dd>
+        <dt>Limitaciones</dt>
+        <dd>Las reglas son genéricas: no conocen el negocio. Un importe negativo puede ser un abono correcto, y un valor atípico puede ser real. Por eso la herramienta marca y explica, y la decisión final la toma una persona.</dd>
+      </dl>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>© 2026 Ángela Santa Cruz López</p>
+    <p><a href="index.html">← Volver al portfolio</a></p>
+  </div>
+</footer>
+
+<script src="ejemplos.js"></script>
+<script src="informes.js"></script>
+</body>
+</html>

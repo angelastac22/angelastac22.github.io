@@ -1,51 +1,42 @@
 # Portfolio · Ángela Santa Cruz
 
-Web personal con un primer proyecto interactivo: **Operations Intelligence**, un dashboard de operaciones logísticas con datos sintéticos.
+Web personal con tres proyectos interactivos que funcionan en el navegador, sin servidor y con datos sintéticos.
 
-Es gratis y no necesitas instalar nada para verla: son archivos HTML, CSS y JavaScript.
+## Proyectos
 
-## Qué hay en cada carpeta
+- **Operations Intelligence** (`operations.html`): dashboard de operaciones logísticas con filtros, indicadores, gráficos y exportación a CSV.
+- **Simulador de picking** (`picking.html`): compara tres estrategias de preparación de pedidos en almacén (por pedido, por lotes y por zonas) y tres formas de elegir la ruta. Desarrolla las ideas de mejora del trabajo fin de máster.
+- **Informes automáticos** (`informes.html`): lee archivos CSV, detecta incidencias, limpia los datos y genera un informe.
 
-```
-index.html              La página principal
-operations.html         El dashboard Operations Intelligence
-cv.pdf                  (lo pones tú) tu CV
-assets/css/style.css    Colores, tipografía y estilos
-assets/js/              El código que hace funcionar los filtros y gráficos
-assets/img/foto.jpg     (opcional, la pones tú) tu foto
-assets/img/dashboard.png  Captura que sale en la home
-data/orders.csv         3.000 pedidos inventados (se abre en Excel)
-python/                 Scripts para generar los datos y practicar SQL
-sql/queries.sql         Consultas SQL de análisis
-```
+Todos los datos son inventados. Son proyectos personales, no experiencia laboral.
 
-## Verla en tu ordenador
+## Archivos
 
-Haz doble clic en `index.html`.
+| Archivo | Para qué sirve |
+|---|---|
+| `index.html`, `operations.html`, `picking.html`, `informes.html` | Las páginas de la web |
+| `style.css` | Estilos |
+| `home.js`, `dashboard.js`, `picking.js`, `informes.js` | Código de cada página |
+| `orders.csv`, `orders.js` | 3.000 pedidos sintéticos (el CSV se abre en Excel) |
+| `generate_data.py` | Genera los pedidos sintéticos con semilla fija |
+| `load_sqlite.py`, `queries.sql` | Carga los pedidos en SQLite y ejecuta consultas de análisis |
+| `generate_ejemplos.py`, `ejemplos.js`, `ejemplo_pedidos_*.csv` | Archivos de ejemplo, con errores a propósito, para probar los informes |
+| `*.png` | Capturas que se ven en la página principal |
 
-## Publicarla gratis (GitHub Pages)
+## Ver la web en local
 
-Sigue la guía paso a paso del chat. Resumen: crea una cuenta en github.com (hace falta solo para alojar la web gratis), crea un repositorio público llamado `TU-USUARIO.github.io`, sube el contenido de esta carpeta y tu web quedará en `https://TU-USUARIO.github.io`.
+Haz doble clic en `index.html`. Hay que tener todos los archivos juntos en la misma carpeta.
 
-## Antes de publicar
-
-- Copia tu CV en esta carpeta con el nombre `cv.pdf`.
-- (Opcional) Copia tu foto en `assets/img/` con el nombre `foto.jpg`.
-- En `index.html`, sustituye el `#` de LinkedIn por tu enlace (busca `TODO`).
-
-## Regenerar los datos o practicar SQL (opcional, requiere Python)
+## Ejecutar los scripts de Python (opcional)
 
 ```
-python python/generate_data.py   # regenera data/orders.csv y data/orders.js
-python python/load_sqlite.py     # crea data/orders.db y ejecuta sql/queries.sql
+python generate_data.py       # regenera orders.csv y orders.js
+python load_sqlite.py         # crea orders.db y ejecuta queries.sql
+python generate_ejemplos.py   # regenera los archivos de ejemplo de los informes
 ```
 
-## Definiciones de los indicadores
+## Definiciones del dashboard
 
 - **Entrega a tiempo:** pedido «Entregado» con fecha de entrega igual o anterior a la prometida. Porcentaje sobre pedidos entregados.
 - **Retraso medio:** media de días solo de las entregas tardías.
 - **Coste medio:** media del coste de los pedidos no cancelados.
-
-## Aviso
-
-Los datos son sintéticos y los patrones (ruta Sur, almacén Centro B, campaña de noviembre-diciembre) están introducidos a propósito. Es un proyecto personal, no experiencia laboral.

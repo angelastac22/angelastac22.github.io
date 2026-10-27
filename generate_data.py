@@ -2,8 +2,8 @@
 Genera pedidos SINTÉTICOS de una empresa de distribución ficticia.
 
 Ejecuta:  python generate_data.py
-Crea:     ../data/orders.csv   (para Excel, SQL, pandas)
-          ../data/orders.js    (para el dashboard web)
+Crea:     orders.csv   (para Excel, SQL, pandas)
+          orders.js    (para el dashboard web)
 
 Los datos llevan patrones de negocio incorporados a propósito, para que el
 análisis tenga algo que descubrir:
@@ -95,8 +95,7 @@ def main():
     for i, o in enumerate(orders, start=1):
         o["order_id"] = f"ORD-{i:04d}"
 
-    out = Path(__file__).resolve().parent.parent / "data"
-    out.mkdir(exist_ok=True)
+    out = Path(__file__).resolve().parent
 
     cols = ["order_id", "order_date", "promised_date", "delivery_date",
             "route", "warehouse", "order_cost", "status"]
@@ -115,7 +114,7 @@ def main():
     for row in compact:
         row[6] = float(row[6])
     (out / "orders.js").write_text(
-        "// Datos sintéticos generados con python/generate_data.py\n"
+        "// Datos sintéticos generados con generate_data.py\n"
         "window.ORDERS = " + json.dumps(compact, ensure_ascii=False, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
