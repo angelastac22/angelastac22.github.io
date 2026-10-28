@@ -379,5 +379,6 @@
     incSorted.map(i => [i.grav, i.tipo, i.file, i.line, i.col, i.valor, i.detalle]))));
   $("print").addEventListener("click", () => window.print());
 
+  window.InformesCore = { combine, analyze, cleanRows, parseNum, parseDate, HANDLING };
   render();
 })();

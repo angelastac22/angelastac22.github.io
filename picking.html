@@ -30,6 +30,7 @@
       <p><b>El problema.</b> Preparar pedidos en un almacén es una de las tareas que más tiempo consume, y casi todo ese tiempo se va en caminar. Hay varias formas de organizar el trabajo y cada una tiene ventajas y costes.</p>
       <p><b>Lo que hace esta herramienta.</b> Genera pedidos aleatorios, calcula la ruta de cada persona por los pasillos y compara tres estrategias: preparar pedido a pedido, agrupar pedidos en lotes o dividir el almacén en zonas. Cambia los parámetros y mira cómo se mueven los resultados.</p>
       <p><b>De dónde viene.</b> Mi trabajo fin de máster (Universidad Europea, 2025) simulaba en lenguaje C un almacén sencillo de 5×5 posiciones, con una sola persona y picking secuencial, para medir cuánto se camina por pedido. Proponía como mejoras ir siempre al producto más cercano, reorganizar el inventario, preparar por zonas y agrupar pedidos. Este simulador pone a prueba esas cuatro ideas en un almacén más realista y con varias personas.</p>
+      <p class="tech"><b>Tecnología.</b> JavaScript, sin librerías: el cálculo se hace en tu navegador. El modelo está inspirado en mi TFM, que estaba escrito en C.</p>
       <p class="notice">Es un modelo simplificado con datos sintéticos que he construido para este proyecto. Sirve para entender el comportamiento de cada estrategia, no para dimensionar un almacén real.</p>
     </section>
 
@@ -55,6 +56,19 @@
       <button class="btn" id="reset" type="button">Restablecer</button>
     </div>
     <p class="muted small" style="margin:8px 2px 0">Simulación número <span id="seed"></span>. Las tres estrategias preparan exactamente los mismos pedidos, para que la comparación sea justa.</p>
+
+
+    <section class="panel" style="margin-top:16px">
+      <h3>Hipótesis de tiempo (puedes cambiarlas)</h3>
+      <p class="muted small" style="margin-top:-6px">Los resultados dependen de estos supuestos. Cambia uno y comprueba si la conclusión se mantiene.</p>
+      <div class="filters flat" role="group" aria-label="Hipótesis de tiempo">
+        <div class="field"><label for="h-speed">Velocidad al caminar (m/s)</label><input type="number" id="h-speed" min="0.5" max="2.5" step="0.1" value="1.2"></div>
+        <div class="field"><label for="h-pick">Coger una línea (s)</label><input type="number" id="h-pick" min="1" max="60" step="1" value="12"></div>
+        <div class="field"><label for="h-sort">Clasificar una línea, solo lotes (s)</label><input type="number" id="h-sort" min="0" max="60" step="1" value="6"></div>
+        <div class="field"><label for="h-consol">Pasar la caja a otra zona (s)</label><input type="number" id="h-consol" min="0" max="120" step="1" value="15"></div>
+        <div class="field"><label for="h-trip">Salir y cerrar una ruta (s)</label><input type="number" id="h-trip" min="0" max="120" step="1" value="20"></div>
+      </div>
+    </section>
 
     <div class="insight" id="insights" aria-live="polite"></div>
 
@@ -95,6 +109,31 @@
       </div>
       <div id="c-map" class="map"></div>
       <p class="muted small" id="map-note"></p>
+    </section>
+
+
+    <section class="panel" style="margin-top:16px">
+      <h3>Ejemplo comentado: cuánto tarda un pedido</h3>
+      <div id="ex-text"></div>
+      <div class="table-wrap"><table><thead><tr><th>Forma de elegir la ruta</th><th class="num">Distancia</th><th class="num">Tiempo</th><th></th></tr></thead><tbody id="ex-rows"></tbody></table></div>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+      <h3>¿Cuándo conviene cada estrategia?</h3>
+      <p class="muted small" style="margin-top:-6px">Cada casilla es una simulación de 120 pedidos con los ajustes de arriba. La letra indica la estrategia que termina antes: P por pedido, L por lotes, Z por zonas.</p>
+      <div class="table-wrap"><div id="c-decision"></div></div>
+      <div id="decision-text" style="margin-top:12px"></div>
+      <p class="muted small">Esta es la idea del TFM llevada más lejos: no hay una estrategia mejor en general; depende del tamaño de los pedidos y de cuánta gente trabaje a la vez.</p>
+    </section>
+
+    <section class="panel" style="margin-top:16px">
+      <h3>Hipótesis del modelo</h3>
+      <ul class="prose-list">
+        <li>Un almacén de pasillos paralelos con una única entrada; las distancias se miden por los pasillos.</li>
+        <li>Los productos de cada pedido se eligen al azar (o con más peso cerca de la entrada, si se elige esa colocación).</li>
+        <li>Los tiempos de las hipótesis de arriba son valores razonables pero inventados; en un almacén real se medirían.</li>
+        <li>Ninguna estrategia tiene en cuenta congestión de pasillos, capacidad del carro ni prioridades de pedido.</li>
+      </ul>
     </section>
 
     <section class="panel method" style="margin-top:16px">

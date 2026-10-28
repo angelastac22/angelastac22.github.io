@@ -1,42 +1,30 @@
-# Portfolio · Ángela Santa Cruz
+# Portfolio · Ángela Santa Cruz López
 
-Web personal con tres proyectos interactivos que funcionan en el navegador, sin servidor y con datos sintéticos.
+Web estática (HTML, CSS y JavaScript sin librerías) con tres proyectos de datos y operaciones.
+Todos los datos son sintéticos.
 
-## Proyectos
-
-- **Operations Intelligence** (`operations.html`): dashboard de operaciones logísticas con filtros, indicadores, gráficos y exportación a CSV.
-- **Simulador de picking** (`picking.html`): compara tres estrategias de preparación de pedidos en almacén (por pedido, por lotes y por zonas) y tres formas de elegir la ruta. Desarrolla las ideas de mejora del trabajo fin de máster.
-- **Informes automáticos** (`informes.html`): lee archivos CSV, detecta incidencias, limpia los datos y genera un informe.
-
-Todos los datos son inventados. Son proyectos personales, no experiencia laboral.
+## Proyectos y tecnología real de cada uno
+| Proyecto | Python | SQL | JavaScript | Power BI |
+|---|---|---|---|---|
+| Operations Intelligence | genera los datos, ejecuta el análisis y valida | consultas sobre SQLite | panel interactivo y análisis de causas | no (pendiente) |
+| Simulador de picking | no | no | todo el modelo (inspirado en mi TFM en C) | no |
+| Informes automáticos | solo genera los CSV de ejemplo | no | la herramienta y la batería de pruebas | no |
 
 ## Archivos
+- `index.html`, `operations.html`, `picking.html`, `informes.html`, `style.css`: las páginas.
+- `orders.csv`, `routes.csv`, `orders.js`: datos de Operations Intelligence (`python generate_data.py`, semilla fija).
+- `queries.sql`: las consultas SQL.
+- `analysis.py`: carga los CSV en SQLite, ejecuta `queries.sql`, recalcula con Python puro y comprueba que coinciden; escribe `analysis_results.js`.
+- `analisis.js`, `dashboard.js`, `home.js`: lógica de la página (causas, validación, panel).
+- `picking.js`: simulador. `informes.js`, `pruebas.js`, `ejemplos.js`: herramienta de informes y sus pruebas.
+- `load_sqlite.py`, `generate_ejemplos.py`: utilidades.
 
-| Archivo | Para qué sirve |
-|---|---|
-| `index.html`, `operations.html`, `picking.html`, `informes.html` | Las páginas de la web |
-| `style.css` | Estilos |
-| `home.js`, `dashboard.js`, `picking.js`, `informes.js` | Código de cada página |
-| `orders.csv`, `orders.js` | 3.000 pedidos sintéticos (el CSV se abre en Excel) |
-| `generate_data.py` | Genera los pedidos sintéticos con semilla fija |
-| `load_sqlite.py`, `queries.sql` | Carga los pedidos en SQLite y ejecuta consultas de análisis |
-| `generate_ejemplos.py`, `ejemplos.js`, `ejemplo_pedidos_*.csv` | Archivos de ejemplo, con errores a propósito, para probar los informes |
-| `*.png` | Capturas que se ven en la página principal |
-
-## Ver la web en local
-
-Haz doble clic en `index.html`. Hay que tener todos los archivos juntos en la misma carpeta.
-
-## Ejecutar los scripts de Python (opcional)
-
+## Reproducir el análisis
 ```
-python generate_data.py       # regenera orders.csv y orders.js
-python load_sqlite.py         # crea orders.db y ejecuta queries.sql
-python generate_ejemplos.py   # regenera los archivos de ejemplo de los informes
+python generate_data.py
+python analysis.py
 ```
+Solo necesita Python 3.
 
-## Definiciones del dashboard
-
-- **Entrega a tiempo:** pedido «Entregado» con fecha de entrega igual o anterior a la prometida. Porcentaje sobre pedidos entregados.
-- **Retraso medio:** media de días solo de las entregas tardías.
-- **Coste medio:** media del coste de los pedidos no cancelados.
+## Publicar
+Sube todos los archivos juntos, sin carpetas, al repositorio `angelastac22.github.io` de GitHub (más `cv.pdf` y `foto.jpg`).

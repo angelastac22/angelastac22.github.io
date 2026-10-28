@@ -275,6 +275,59 @@
     $("map-note").textContent = `Ruta de ${what}: ${nf0.format(t0)} m recorridos para ${nProd} ${nProd === 1 ? "producto" : "productos"} (puntos naranjas).`;
   }
 
+  // ---------- Ejemplo comentado paso a paso ----------
+  const METHOD_NAME = { s: "recorrido en S", nn: "siempre al más cercano", list: "orden de la lista" };
+  function example(sim, p) {
+    const t = sim.results.single.sample;
+    const items = t.items, n = items.length;
+    const rows = ["list", "nn", "s"].map(m => {
+      const r = route(items, 0, m);
+      return { m, dist: r.dist, time: r.dist / CFG.speed + n * CFG.pickT + CFG.tripT };
+    });
+    const cur = rows.find(r => r.m === p.method);
+    const best = rows.slice().sort((a, b) => a.time - b.time)[0];
+    const list = items.map(it => `pasillo ${it.a + 1}, posición ${it.p}`).join("; ");
+    $("ex-text").innerHTML =
+      `<p>Tomamos un pedido de la simulación, con <b>${n} ${n === 1 ? "línea" : "líneas"}</b>: ${list}.</p>` +
+      `<p>Con el método elegido (<b>${METHOD_NAME[p.method]}</b>) la persona recorre <b>${nf0.format(cur.dist)} m</b>. Su tiempo se calcula sumando tres partes:</p>` +
+      `<ol class="prose-list"><li>Caminar: ${nf0.format(cur.dist)} m ÷ ${nf1.format(CFG.speed)} m/s = <b>${nf0.format(cur.dist / CFG.speed)} s</b></li>` +
+      `<li>Coger los productos: ${n} × ${CFG.pickT} s = <b>${n * CFG.pickT} s</b></li>` +
+      `<li>Salir y cerrar la ruta: <b>${CFG.tripT} s</b></li></ol>` +
+      `<p>Total: <b>${nf0.format(cur.time)} s</b>. Si se hiciera por pedido con las tres formas de elegir la ruta:</p>`;
+    $("ex-rows").innerHTML = rows.map(r => `<tr><td>${METHOD_NAME[r.m][0].toUpperCase() + METHOD_NAME[r.m].slice(1)}</td><td class="num">${nf0.format(r.dist)} m</td><td class="num">${nf0.format(r.time)} s</td>` +
+      `<td>${r.m === best.m ? '<span class="tag ok">La más rápida</span>' : ""}</td></tr>`).join("");
+  }
+
+  // ---------- Mapa de decisión: qué estrategia gana según líneas por pedido y personas ----------
+  const WIN = { single: { l: "P", name: "por pedido" }, batch: { l: "L", name: "por lotes" }, zone: { l: "Z", name: "por zonas" } };
+  function decision(p) {
+    const grid = [];
+    for (let lines = 1; lines <= 10; lines++) {
+      const row = [];
+      for (let k = 1; k <= 6; k++) {
+        const r = simulate({ orders: 120, lines, pickers: k, batch: p.batch, layout: p.layout, method: p.method, seed: p.seed }).results;
+        const w = STRATS.map(s => s.id).sort((a, b) => r[a].makespan - r[b].makespan)[0];
+        row.push(w);
+      }
+      grid.push(row);
+    }
+    let h = `<table class="dmap"><thead><tr><th>Líneas por pedido</th>${[1, 2, 3, 4, 5, 6].map(k => `<th class="num">${k} ${k === 1 ? "persona" : "personas"}</th>`).join("")}</tr></thead><tbody>`;
+    grid.forEach((row, i) => { h += `<tr><td>${i + 1}</td>${row.map(w => `<td class="w-${w}" title="Gana ${WIN[w].name}">${WIN[w].l}</td>`).join("")}</tr>`; });
+    $("c-decision").innerHTML = h + "</tbody></table>";
+
+    // lectura automática, a partir de la propia tabla
+    const total = grid.length * 6, cnt = { single: 0, batch: 0, zone: 0 };
+    grid.forEach(r => r.forEach(w => cnt[w]++));
+    const major = row => { const c = {}; row.forEach(w => c[w] = (c[w] || 0) + 1); return Object.keys(c).sort((a, b) => c[b] - c[a])[0]; };
+    const runs = [];
+    grid.forEach((row, i) => { const m = major(row); if (runs.length && runs[runs.length - 1].w === m) runs[runs.length - 1].to = i + 1; else runs.push({ w: m, from: i + 1, to: i + 1 }); });
+    const span = r => r.from === r.to ? `con ${r.from} ${r.from === 1 ? "línea" : "líneas"}` : `con ${r.from} a ${r.to} líneas`;
+    $("decision-text").innerHTML =
+      `<p>De las ${total} combinaciones, preparar <b>por pedido</b> gana en ${cnt.single}, <b>por lotes</b> en ${cnt.batch} y <b>por zonas</b> en ${cnt.zone}.</p>` +
+      `<p>Según la estrategia que gana en la mayoría de columnas: ${runs.map(r => `${span(r)}, <b>${WIN[r.w].name}</b>`).join("; ")}.</p>` +
+      (cnt.batch === total ? `<p>Con estas hipótesis el picking por lotes gana siempre, y es sensible al tiempo de clasificar: sube «Clasificar una línea» (por ejemplo a 20 s) y el picking por pedido empieza a ganar con pedidos grandes. Por eso las hipótesis conviene medirlas en el almacén real antes de decidir.</p>` : "");
+  }
+
   // ---------- Pantalla ----------
   let seed = 7;
   function params() {
@@ -284,7 +337,14 @@
     };
   }
 
+  function readHyp() {
+    CFG.speed = +$("h-speed").value || DEF.speed; CFG.pickT = +$("h-pick").value || DEF.pickT;
+    CFG.sortT = +$("h-sort").value; CFG.consolT = +$("h-consol").value; CFG.tripT = +$("h-trip").value;
+  }
+  const DEF = Object.assign({}, CFG);
+
   function run() {
+    readHyp();
     const p = params();
     $("o-orders").textContent = nf0.format(p.orders);
     $("o-lines").textContent = p.lines;
@@ -328,23 +388,20 @@
     $("insights").innerHTML = `<h3>Lo que dicen los datos</h3><p>${out.join("</p><p>")}</p>`;
 
     map($("c-map"), sim, $("p-view").value, p);
+    example(sim, p);
+    decision(p);
+    $("a-speed").textContent = `${nf1.format(CFG.speed)} m/s`; $("a-pick").textContent = `${CFG.pickT} s por línea`;
+    $("a-sort").textContent = `${CFG.sortT} s por línea`; $("a-consol").textContent = `${CFG.consolT} s`; $("a-trip").textContent = `${CFG.tripT} s por ruta`;
   }
 
-  ["p-orders", "p-lines", "p-pickers", "p-batch", "p-layout", "p-route"].forEach(id => $(id).addEventListener("input", run));
+  ["p-orders", "p-lines", "p-pickers", "p-batch", "p-layout", "p-route", "h-speed", "h-pick", "h-sort", "h-consol", "h-trip"].forEach(id => $(id).addEventListener("input", run));
   $("p-view").addEventListener("input", run);
   $("again").addEventListener("click", () => { seed = (seed * 7919 + 13) % 100000; run(); });
   $("reset").addEventListener("click", () => {
     $("p-orders").value = 300; $("p-lines").value = 4; $("p-pickers").value = 3; $("p-batch").value = 5;
-    $("p-layout").value = "random"; $("p-route").value = "s"; $("p-view").value = "single"; seed = 7; run();
+    $("p-layout").value = "random"; $("p-route").value = "s"; $("p-view").value = "single"; seed = 7;
+    $("h-speed").value = DEF.speed; $("h-pick").value = DEF.pickT; $("h-sort").value = DEF.sortT; $("h-consol").value = DEF.consolT; $("h-trip").value = DEF.tripT; run();
   });
-
-  const params0 = CFG; // se muestran en la tabla de supuestos
-  $("a-layout").textContent = `${params0.aisles} pasillos de ${params0.slots} posiciones`;
-  $("a-speed").textContent = `${nf1.format(params0.speed)} m/s`;
-  $("a-pick").textContent = `${params0.pickT} s por línea`;
-  $("a-sort").textContent = `${params0.sortT} s por línea`;
-  $("a-consol").textContent = `${params0.consolT} s`;
-  $("a-trip").textContent = `${params0.tripT} s por ruta`;
 
   run();
 })();

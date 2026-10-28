@@ -4,6 +4,7 @@ Genera pedidos SINTÉTICOS de una empresa de distribución ficticia.
 Ejecuta:  python generate_data.py
 Crea:     orders.csv   (para Excel, SQL, pandas)
           orders.js    (para el dashboard web)
+          routes.csv   (tabla de rutas: plazo y tarifa de referencia, para practicar JOIN)
 
 Los datos llevan patrones de negocio incorporados a propósito, para que el
 análisis tenga algo que descubrir:
@@ -118,6 +119,12 @@ def main():
         "window.ORDERS = " + json.dumps(compact, ensure_ascii=False, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
+    # tabla de rutas (dimensión): plazo prometido y tarifa de referencia
+    with open(out / "routes.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["route", "promised_days", "reference_cost"])
+        for name, (lead, base_cost, _p_late) in ROUTES.items():
+            w.writerow([name, lead, base_cost])
     print(f"{len(orders)} pedidos escritos en {out}")
 
 

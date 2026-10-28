@@ -28,10 +28,39 @@
     <section class="page-head">
       <h1>Operations Intelligence</h1>
       <p><b>El problema.</b> Una empresa de distribución gestiona miles de pedidos, pero la información está repartida y nadie tiene claro dónde se pierden las entregas a tiempo.</p>
-      <p><b>Lo que hace esta herramienta.</b> Convierte la tabla de pedidos en indicadores, comparativas y una lectura automática. Puedes filtrar y comprobar por tu cuenta dónde se concentran los retrasos.</p>
-      <p class="notice">Todos los datos son sintéticos: los generé con un script de Python para este proyecto. No pertenecen a ninguna empresa real, y es un proyecto personal, no experiencia laboral.</p>
+      <p><b>Lo que hace este proyecto.</b> Parte de una tabla de 3.000 pedidos y responde a tres preguntas: ¿dónde fallan las entregas?, ¿por qué? y ¿qué se podría hacer? Incluye un panel interactivo, las consultas SQL que lo respaldan y una validación de que los números son correctos.</p>
+      <p class="notice">Todos los datos son sintéticos: los generé con un script de Python para este proyecto. Algunos patrones están introducidos a propósito para poder demostrar el método, así que las conclusiones ilustran cómo analizar un caso, no describen ninguna empresa real. Es un proyecto personal, no experiencia laboral.</p>
+      <p class="tech"><b>Tecnología.</b> Python (generación de datos, análisis y validación) · SQL sobre SQLite (consultas) · JavaScript (panel interactivo). Todavía no incluye un dashboard en Power BI.</p>
     </section>
 
+    <nav class="chips" aria-label="Secciones de la página">
+      <a href="#resumen">Resumen</a><a href="#causas">Causas</a><a href="#panel">Panel interactivo</a><a href="#sql">Consultas SQL</a><a href="#validacion">Validación</a><a href="#metodo">Método</a>
+    </nav>
+
+    <section id="resumen" class="block">
+      <h2>Resumen: qué se encuentra y qué se haría</h2>
+      <div class="findings" id="findings"></div>
+      <section class="panel" style="margin-top:16px">
+        <h3>Recomendaciones (a evaluar, no a dar por hechas)</h3>
+        <ul class="prose-list" id="recs"></ul>
+        <p class="muted small">Son hipótesis de trabajo a partir de estos datos. Para decidir harían falta más variables: transportista, incidencias, distancia o carga de personal.</p>
+      </section>
+    </section>
+
+    <section id="causas" class="block">
+      <h2>Causas: qué factor pesa más</h2>
+      <p class="lead-p">Para no confundir factores entre sí (por ejemplo, que el almacén Centro B atienda más a la ruta Sur), cada efecto se mide comparando dentro de los mismos grupos de los otros factores. El resultado son puntos porcentuales de entregas tardías de más.</p>
+      <div class="charts">
+        <section class="panel wide"><h3>Efecto de cada factor sobre la tasa de retrasos</h3><div id="c-effects"></div></section>
+        <section class="panel wide"><h3>% de entregas tardías por ruta, periodo y almacén</h3><div class="table-wrap"><table id="t-causes"></table></div></section>
+        <section class="panel wide"><h3>Dónde actuar primero</h3><p class="muted small" style="margin-top:-6px">«Tardías de más» = entregas tardías menos las que se esperarían con la tasa media global.</p><div class="table-wrap"><table id="t-priority"></table></div></section>
+        <section class="panel wide"><h3>¿Cuánto cuesta realmente un retraso?</h3><div class="table-wrap"><table id="t-cost"></table></div>
+        <p class="muted small">La diferencia global exagera el efecto porque la ruta Sur es más cara y además llega tarde más a menudo. Es un ejemplo de por qué conviene comparar dentro de cada grupo.</p></section>
+      </div>
+    </section>
+
+    <section id="panel" class="block">
+      <h2>Panel interactivo</h2>
     <div class="filters" role="search" aria-label="Filtros del dashboard">
       <div class="field"><label for="f-from">Desde</label><input type="date" id="f-from"></div>
       <div class="field"><label for="f-to">Hasta</label><input type="date" id="f-to"></div>
@@ -84,7 +113,27 @@
       </div>
     </section>
 
-    <section class="panel method" style="margin-top:16px">
+    </section>
+
+    <section id="sql" class="block">
+      <h2>Consultas SQL</h2>
+      <p class="lead-p">Las consultas están en <a href="queries.sql">queries.sql</a> y se ejecutan sobre SQLite <span id="sql-version"></span> con <a href="analysis.py">analysis.py</a>. Lo que ves aquí es el texto exacto de cada consulta y el resultado real que devolvió. Uso agregaciones con CASE WHEN, JOIN, GROUP BY, una CTE y una función de ventana. Estoy en formación en SQL, y este proyecto es parte de ese aprendizaje.</p>
+      <div id="sql-list"></div>
+    </section>
+
+    <section id="validacion" class="block">
+      <h2>Validación: ¿son correctos los indicadores?</h2>
+      <p class="lead-p">Cada indicador clave se calcula tres veces por caminos distintos: en esta página con JavaScript, con SQL y con Python puro. Si alguno no coincidiera, <code>analysis.py</code> se detendría con un error. <b id="v-summary"></b></p>
+      <section class="panel"><div class="table-wrap"><table id="t-checks"></table></div></section>
+      <section class="panel" style="margin-top:16px"><h3>Comprobaciones de coherencia de los datos</h3><ul class="checks" id="t-tests"></ul></section>
+      <section class="panel" style="margin-top:16px"><h3>Cómo reproducirlo</h3>
+        <pre class="code"><code>python generate_data.py   # genera orders.csv, routes.csv y orders.js (semilla fija: siempre los mismos datos)
+python analysis.py        # ejecuta queries.sql, recalcula con Python y comprueba que coinciden</code></pre>
+        <p class="muted small">Solo necesita Python 3; no hay que instalar nada más.</p></section>
+    </section>
+
+    <section id="metodo" class="block">
+    <section class="panel method">
       <h3>Cómo se calculan los indicadores</h3>
       <dl>
         <dt>Entrega a tiempo</dt>
@@ -92,12 +141,13 @@
         <dt>Retraso medio</dt>
         <dd>Media de días de retraso solo de las entregas que llegaron tarde, para que no se diluya con las puntuales.</dd>
         <dt>Coste medio</dt>
-        <dd>Media del coste de los pedidos filtrados, sin contar los cancelados.</dd>
+        <dd>Media del coste de los pedidos, sin contar los cancelados.</dd>
         <dt>Pedidos en tránsito y cancelados</dt>
-        <dd>Cuentan como pedidos, pero no entran en el cumplimiento porque aún no tienen entrega.</dd>
+        <dd>Cuentan como pedidos, pero no entran en el cumplimiento porque no tienen entrega.</dd>
         <dt>Limitaciones</dt>
-        <dd>Los datos son simulados y tienen patrones introducidos a propósito (ruta Sur, almacén Centro B y campaña de noviembre-diciembre). Las conclusiones ilustran el método; no describen ninguna empresa real.</dd>
+        <dd>Los datos son simulados y tienen patrones introducidos a propósito (ruta Sur, almacén Centro B y campaña de noviembre-diciembre), por lo que encontrarlos no es un hallazgo real, sino la comprobación de que el método los detecta. El análisis de causas es descriptivo: compara grupos, pero no demuestra causalidad.</dd>
       </dl>
+    </section>
     </section>
   </div>
 </main>
@@ -111,5 +161,7 @@
 
 <script src="orders.js"></script>
 <script src="dashboard.js"></script>
+<script src="analysis_results.js"></script>
+<script src="analisis.js"></script>
 </body>
 </html>

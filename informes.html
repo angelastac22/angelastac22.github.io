@@ -29,6 +29,7 @@
       <h1>Informes automáticos</h1>
       <p><b>El problema.</b> Cada semana llegan archivos de distintas zonas, con formatos distintos y errores: filas repetidas, importes vacíos, fechas imposibles o la misma ciudad escrita de tres formas. Revisarlos a mano lleva horas y siempre se escapa algo.</p>
       <p><b>Lo que hace esta herramienta.</b> Lee uno o varios archivos CSV, los une, detecta las incidencias, limpia lo que se puede corregir sin riesgo y genera un informe con las conclusiones. Después puedes descargar los datos limpios y la lista de incidencias.</p>
+      <p class="tech"><b>Tecnología.</b> JavaScript en el navegador, sin librerías. Los archivos de ejemplo los genera un script de Python (generate_ejemplos.py).</p>
       <p class="notice">Los archivos se procesan en tu navegador y no se envían a ningún sitio. Los datos de ejemplo son inventados, con errores puestos a propósito. Es un proyecto personal, no experiencia laboral.</p>
     </section>
 
@@ -96,6 +97,17 @@
       </div>
     </div>
 
+    <section class="panel" id="pruebas" style="margin-top:24px">
+      <h3>Pruebas: ¿detecta de verdad los errores?</h3>
+      <p class="muted" style="margin-top:-6px;max-width:74ch">Cada prueba usa un archivo al que he introducido un número conocido de errores. La herramienta no sabe cuántos hay: los detecta por su cuenta, y aquí se compara lo esperado con lo detectado. Puedes descargar los archivos de prueba y subirlos tú arriba para comprobarlo con tus propios ojos.</p>
+      <div class="report-actions" style="margin-top:8px"><button class="btn primary" id="run-tests" type="button">Ejecutar las pruebas</button><button class="btn" id="dl-tests" type="button">Descargar todos los archivos de prueba</button></div>
+      <p class="small" id="tests-summary" style="margin:10px 0 0"><b></b></p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Prueba</th><th>Qué contiene</th><th>Esperado</th><th>Detectado</th><th>Resultado</th><th>Archivo</th></tr></thead>
+        <tbody id="tests-body"></tbody>
+      </table></div>
+    </section>
+
     <section class="panel method" style="margin-top:24px">
       <h3>Qué comprueba y qué corrige</h3>
       <dl>
@@ -123,5 +135,6 @@
 
 <script src="ejemplos.js"></script>
 <script src="informes.js"></script>
+<script src="pruebas.js"></script>
 </body>
 </html>
