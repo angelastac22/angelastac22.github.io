@@ -287,3 +287,10 @@ td.w-zone { background: #d9efe5; color: #1d6b50; }
 .shots figure { margin: 0; background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 10px; }
 .shots img { width: 100%; height: auto; display: block; border-radius: 8px; }
 .shots figcaption { color: var(--muted); font-size: .95rem; padding: 8px 6px 2px; }
+
+/* ---- Texto justificado en todo el sitio ---- */
+main p, main dd, main figcaption, .prose-list li, .finding p, .c3 p, .insight p, .notice, .tech, .method dd, .card p, details.query p {
+  text-align: justify; hyphens: auto; -webkit-hyphens: auto;
+}
+.kpi span, .vk span, .drop span, .drop b, .btn-row p, .field label, table p, .file-list li, .chips a, footer p, .brand, .lab { text-align: left; hyphens: manual; }
+.drop, .drop * { text-align: center; }
