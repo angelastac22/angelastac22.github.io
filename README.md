@@ -31,6 +31,3 @@ python generate_data.py
 python analysis.py
 ```
 Solo necesita Python 3.
-
-## Publicar
-Sube todos los archivos juntos, sin carpetas, al repositorio `angelastac22.github.io` de GitHub (más `cv.pdf` y `foto.jpg`).
