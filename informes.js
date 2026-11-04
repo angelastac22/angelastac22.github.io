@@ -358,6 +358,8 @@
 
   // ---------- Entrada de archivos ----------
   async function addFiles(list) {
+    // cada selección sustituye a la anterior; para unir varios archivos, se eligen a la vez
+    if (list.some(f => /\.(csv|txt)$/i.test(f.name))) files = [];
     for (const f of list) {
       if (!/\.(csv|txt)$/i.test(f.name)) continue;
       files = files.filter(x => x.name !== f.name);
