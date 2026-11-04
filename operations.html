@@ -30,21 +30,19 @@
       <p><b>El problema.</b> Una empresa de distribución gestiona miles de pedidos, pero la información está repartida y nadie tiene claro dónde se pierden las entregas a tiempo.</p>
       <p><b>Lo que hace este proyecto.</b> Parte de una tabla de 3.000 pedidos y responde a tres preguntas: ¿dónde fallan las entregas?, ¿por qué? y ¿qué se podría hacer? Incluye un panel interactivo, las consultas SQL que lo respaldan y una validación de que los números son correctos.</p>
       <p class="notice">Todos los datos son sintéticos: los generé con un script de Python para este proyecto. Algunos patrones están introducidos a propósito para poder demostrar el método, así que las conclusiones ilustran cómo analizar un caso, no describen ninguna empresa real. Es un proyecto personal, no experiencia laboral.</p>
-      <p class="tech"><b>Tecnología.</b> Python (generación de datos, análisis y validación) · SQL sobre SQLite (consultas) · JavaScript (panel interactivo). Todavía no incluye un dashboard en Power BI.</p>
+      <p class="tech"><b>Tecnología.</b> Python (generación de datos, análisis y validación) · SQL sobre SQLite (consultas) · JavaScript (panel interactivo) · Power BI (dashboard con medidas DAX).</p>
     </section>
 
+    <a class="vbadge" id="v-badge" href="#validacion">Validación: …</a>
+
     <nav class="chips" aria-label="Secciones de la página">
-      <a href="#resumen">Resumen</a><a href="#causas">Causas</a><a href="#panel">Panel interactivo</a><a href="#sql">Consultas SQL</a><a href="#validacion">Validación</a><a href="#metodo">Método</a>
+      <a href="#resumen">Resumen</a><a href="#causas">Causas</a><a href="#conclusiones">Conclusiones</a><a href="#panel">Panel interactivo</a><a href="#powerbi">Power BI</a><a href="#sql">Consultas SQL</a><a href="#validacion">Validación</a><a href="#metodo">Método</a>
     </nav>
 
     <section id="resumen" class="block">
       <h2>Resumen: qué se encuentra y qué se haría</h2>
       <div class="findings" id="findings"></div>
-      <section class="panel" style="margin-top:16px">
-        <h3>Recomendaciones (a evaluar, no a dar por hechas)</h3>
-        <ul class="prose-list" id="recs"></ul>
-        <p class="muted small">Son hipótesis de trabajo a partir de estos datos. Para decidir harían falta más variables: transportista, incidencias, distancia o carga de personal.</p>
-      </section>
+      <p class="muted small" style="margin-top:12px">Qué decisión se recomienda y qué datos faltan para confirmarla: ver <a href="#conclusiones">Conclusiones de negocio</a>.</p>
     </section>
 
     <section id="causas" class="block">
@@ -57,6 +55,12 @@
         <section class="panel wide"><h3>¿Cuánto cuesta realmente un retraso?</h3><div class="table-wrap"><table id="t-cost"></table></div>
         <p class="muted small">La diferencia global exagera el efecto porque la ruta Sur es más cara y además llega tarde más a menudo. Es un ejemplo de por qué conviene comparar dentro de cada grupo.</p></section>
       </div>
+    </section>
+
+    <section id="conclusiones" class="block">
+      <h2>Conclusiones de negocio</h2>
+      <p class="lead-p">Cada hallazgo se cierra con tres apartados: qué he detectado, qué decisión recomendaría y qué información adicional necesitaría para confirmarlo. Los datos describen diferencias entre grupos, pero no demuestran por sí solos qué causa cada una.</p>
+      <div id="conclusions"></div>
     </section>
 
     <section id="panel" class="block">
@@ -115,6 +119,29 @@
 
     </section>
 
+    <section id="powerbi" class="block">
+      <h2>Dashboard en Power BI</h2>
+      <p class="lead-p">Con los mismos datos, construí un informe de tres páginas en Power BI: resumen, causas y detalle de pedidos. Los indicadores son medidas DAX (<a href="medidas.dax">medidas.dax</a>) y el modelo conecta los pedidos con una tabla de fechas y con la de rutas. Puedes ver el informe completo en <a href="powerbi.pdf">PDF</a>.</p>
+      <div class="shots">
+        <figure><img src="powerbi-1.jpg" alt="Página de resumen del informe de Power BI: indicadores, evolución mensual, cumplimiento por ruta y matriz almacén-ruta" loading="lazy"><figcaption>Página 1 · Resumen: indicadores, evolución, rutas y dónde se concentran los retrasos.</figcaption></figure>
+        <figure><img src="powerbi-2.jpg" alt="Página de causas del informe de Power BI: combinaciones almacén-ruta, campaña y coste de un retraso" loading="lazy"><figcaption>Página 2 · Causas: combinaciones con más retrasos de más, efecto de la campaña y coste por ruta.</figcaption></figure>
+        <figure><img src="powerbi-3.jpg" alt="Página de detalle del informe de Power BI con la tabla de pedidos" loading="lazy"><figcaption>Página 3 · Detalle de pedidos.</figcaption></figure>
+      </div>
+      <section class="panel" style="margin-top:16px"><h3>Los números coinciden con SQL y Python</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Indicador</th><th class="num">Power BI</th><th class="num">SQL y Python</th></tr></thead>
+          <tbody>
+            <tr><td>Pedidos</td><td class="num">3.000</td><td class="num">3.000</td></tr>
+            <tr><td>Entregas a tiempo</td><td class="num">79,19 %</td><td class="num">79,2 %</td></tr>
+            <tr><td>Coste medio por pedido</td><td class="num">273,04 €</td><td class="num">273,04 €</td></tr>
+            <tr><td>Retraso medio de las tardías (días)</td><td class="num">2,12</td><td class="num">2,1</td></tr>
+            <tr><td>Tardías de más, Centro B–Sur</td><td class="num">46,17</td><td class="num">46,2</td></tr>
+            <tr><td>Diferencia de coste tardío vs a tiempo</td><td class="num">64,89 €</td><td class="num">64,89 €</td></tr>
+          </tbody></table></div>
+        <p class="muted small">Los valores de Power BI salen de las capturas del informe; los de SQL y Python, de la sección de validación. Las diferencias son solo de redondeo.</p>
+      </section>
+    </section>
+
     <section id="sql" class="block">
       <h2>Consultas SQL</h2>
       <p class="lead-p">Las consultas están en <a href="queries.sql">queries.sql</a> y se ejecutan sobre SQLite <span id="sql-version"></span> con <a href="analysis.py">analysis.py</a>. Lo que ves aquí es el texto exacto de cada consulta y el resultado real que devolvió. Uso agregaciones con CASE WHEN, JOIN, GROUP BY, una CTE y una función de ventana. Estoy en formación en SQL, y este proyecto es parte de ese aprendizaje.</p>
@@ -123,9 +150,14 @@
 
     <section id="validacion" class="block">
       <h2>Validación: ¿son correctos los indicadores?</h2>
+      <div class="vstrip" id="v-strip"></div>
       <p class="lead-p">Cada indicador clave se calcula tres veces por caminos distintos: en esta página con JavaScript, con SQL y con Python puro. Si alguno no coincidiera, <code>analysis.py</code> se detendría con un error. <b id="v-summary"></b></p>
       <section class="panel"><div class="table-wrap"><table id="t-checks"></table></div></section>
       <section class="panel" style="margin-top:16px"><h3>Comprobaciones de coherencia de los datos</h3><ul class="checks" id="t-tests"></ul></section>
+      <section class="panel" style="margin-top:16px"><h3>Qué pasa si un resultado no coincide</h3>
+        <p class="muted" style="margin-top:-6px">El análisis no continúa: <code>analysis.py</code> se detiene y no genera los resultados de la página. Esto es lo que mostraría (ejemplo con un valor alterado a propósito):</p>
+        <pre class="code"><code>NO COINCIDEN: Entregas a tiempo, ruta Sur (%): SQL=67.2 Python=71.0 (diferencia 3.8000 &gt; tolerancia 0.051)</code></pre>
+        <p class="muted small">La tolerancia de <b id="v-tol">0,051</b> existe porque SQL redondea el resultado a 1 o 2 decimales y Python trabaja sin redondear, y en valores terminados en 5 los redondeos pueden diferir en una milésima. Cualquier diferencia mayor es un error real, no de redondeo.</p></section>
       <section class="panel" style="margin-top:16px"><h3>Cómo reproducirlo</h3>
         <pre class="code"><code>python generate_data.py   # genera orders.csv, routes.csv y orders.js (semilla fija: siempre los mismos datos)
 python analysis.py        # ejecuta queries.sql, recalcula con Python y comprueba que coinciden</code></pre>

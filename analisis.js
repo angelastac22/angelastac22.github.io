@@ -88,16 +88,32 @@
     ];
     $("findings").innerHTML = cards.map(c => `<article class="finding"><span class="lab">${c.tag}</span><b>${c.big}</b><h3>${c.title}</h3><p>${c.text}</p></article>`).join("");
 
-    // recomendaciones y escenario
+    // conclusiones de negocio: qué he detectado / qué recomendaría / qué necesitaría
     const top = combos[0], top3 = combos.slice(0, 3);
     const lateTotal = D.filter(r => r.late).length;
     const newLate = lateTotal - top3.reduce((s, c) => s + (c.late - c.n * globalLate), 0);
     const newPct = 100 * (1 - newLate / D.length), nowPct = onTimePct(D);
-    $("recs").innerHTML =
-      `<li><b>Revisar primero Centro B en la ruta ${top.route}.</b> Es la combinación con más entregas tardías de más: ${n0.format(top.excess)} frente a lo esperable, un ${n0.format(100 * top.excess / positiveExcess)} % del exceso total.</li>` +
-      `<li><b>Preparar la campaña con más margen.</b> Cuando el volumen sube un ${n0.format(100 * (volPeak / volRest - 1))} %, el cumplimiento cae ${n0.format(onTimePct(restD) - onTimePct(peakD))} puntos. Convendría estudiar refuerzo de personal o de transporte en esos dos meses.</li>` +
-      `<li><b>No tratar el plazo de ${worstRoute[0]} como la causa.</b> Ya es el más largo y sigue siendo la ruta que peor cumple; habría que mirar el transporte y la preparación en origen.</li>` +
-      `<li><b>Escenario:</b> si las tres combinaciones con más retrasos de más (${top3.map(c => `${c.wh}–${c.route}`).join(", ")}) llegaran a la tasa media, el cumplimiento global subiría del ${n1.format(nowPct)} % al ${n1.format(newPct)} %, unas ${n0.format(lateTotal - newLate)} entregas más a tiempo.</li>`;
+    const campaigns = new Set(R.filter(r => r.peak).map(r => r.month.slice(0, 4))).size;
+    const concl = [
+      { t: `Centro B y la ruta ${top.route}`,
+        a: `La combinación ${top.wh}–${top.route} acumula ${n0.format(top.excess)} entregas tardías más de las esperables, un ${n0.format(100 * top.excess / positiveExcess)} % del exceso total. Si las tres peores combinaciones (${top3.map(c => `${c.wh}–${c.route}`).join(", ")}) llegaran a la tasa media, el cumplimiento global subiría del ${n1.format(nowPct)} % al ${n1.format(newPct)} %.`,
+        d: `Empezar la revisión por esa combinación antes que por medidas generales.`,
+        n: `Transportista, incidencias registradas, distancia real, hora de salida y carga de trabajo del almacén. Sin ellas se sabe dónde ocurre el problema, pero no por qué.` },
+      { t: "Campaña de noviembre y diciembre",
+        a: `El volumen sube un ${n0.format(100 * (volPeak / volRest - 1))} % y el cumplimiento baja ${n0.format(onTimePct(restD) - onTimePct(peakD))} puntos. Es coherente con una falta de capacidad, pero la relación puede no ser causal.`,
+        d: `Estudiar un refuerzo planificado de personal o transporte en esos dos meses y medir si el cumplimiento se recupera.`,
+        n: `Plantilla y capacidad de transporte por semana. ${campaigns <= 1 ? "Además, los datos incluyen una sola campaña: haría falta ver al menos otra para confirmar que es estacional y no una coincidencia." : "Comparar varias campañas ayudaría a confirmar la estacionalidad."}` },
+      { t: `Plazo prometido en la ruta ${worstRoute[0]}`,
+        a: `La ruta ${worstRoute[0]} cumple solo el ${n1.format(worstRoute[1])} % ${leadOf(worstRoute[0]) === longestLead ? ` pese a tener el plazo más largo (${longestLead} días)` : ` con un plazo de ${leadOf(worstRoute[0])} días`}.`,
+        d: `No tocar el plazo todavía: alargarlo ocultaría el problema y acortarlo prometería algo que hoy no se cumple. Investigar primero el transporte y la preparación.`,
+        n: `Tiempos de cada fase (preparación, salida, tránsito, entrega) para ver en cuál se pierde el tiempo.` },
+      { t: "Coste de un pedido tardío",
+        a: `Los pedidos tardíos cuestan de media ${n0.format(costNaive)} € más, pero dentro de cada ruta la diferencia baja a unos ${n0.format(costWithin)} €. Parte de la cifra inicial viene de mezclar rutas de tarifa distinta.`,
+        d: `No usar los ${n0.format(costNaive)} € para justificar inversiones. Tomar como referencia la comparación dentro de cada ruta, y aun así con cautela: una diferencia de coste no demuestra que el retraso cause ese sobrecoste.`,
+        n: `Coste desglosado (penalizaciones, reexpediciones, horas extra) y características del pedido (peso, volumen, urgencia) para comparar pedidos realmente parecidos.` },
+    ];
+    $("conclusions").innerHTML = concl.map((c, i) => `<article class="concl"><h3><span class="qn">${i + 1}</span>${c.t}</h3>` +
+      `<div class="c3"><div><b>Qué he detectado</b><p>${c.a}</p></div><div><b>Qué recomendaría</b><p>${c.d}</p></div><div><b>Qué necesitaría para confirmarlo</b><p>${c.n}</p></div></div></article>`).join("");
   })();
 
   // =====================================================================
@@ -198,6 +214,17 @@
       ["Solo los pedidos entregados tienen fecha de entrega", R.filter(r => (r.status === "Entregado") !== !!r.delivered).length],
       ["Todos los costes son positivos", R.filter(r => !(r.cost > 0)).length],
     ];
+    const okT = tests.filter(t => t[1] === 0).length;
+    if (A) {
+      const tol = String(A.tolerancia).replace(".", ",");
+      $("v-tol").textContent = tol;
+      $("v-badge").innerHTML = `<b>✓ Validado:</b> ${okAll} de ${A.checks.length} indicadores coinciden entre JavaScript, SQL y Python · ${okT} de ${tests.length} comprobaciones de datos superadas <span>Ver detalle →</span>`;
+      $("v-strip").innerHTML =
+        `<div class="vk"><b>${okAll}/${A.checks.length}</b><span>indicadores coinciden en los tres cálculos</span></div>` +
+        `<div class="vk"><b>${okT}/${tests.length}</b><span>comprobaciones de coherencia de los datos</span></div>` +
+        `<div class="vk"><b>± ${tol}</b><span>tolerancia por redondeo</span></div>` +
+        `<div class="vk"><b>3</b><span>cálculos independientes: JavaScript, SQL y Python</span></div>`;
+    }
     $("t-tests").innerHTML = tests.map(([name, bad]) => `<li class="${bad === 0 ? "ok" : "err"}"><span class="ico">${bad === 0 ? "✓" : "✕"}</span><span>${name}<small>${bad === 0 ? "Sin excepciones." : n0.format(bad) + " casos."}</small></span><span class="n">${bad}</span></li>`).join("");
   })();
 })();

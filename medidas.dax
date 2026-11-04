@@ -1,0 +1,48 @@
+// Medidas para Power BI · Operations Intelligence
+// Tablas: orders, routes, Calendario
+// Crea cada medida con: pestaña "Modelado" > "Nueva medida", y pega una por una.
+
+Pedidos = COUNTROWS(orders)
+
+Pedidos entregados =
+CALCULATE(COUNTROWS(orders), orders[status] = "Entregado")
+
+Entregas a tiempo =
+COUNTROWS(FILTER(orders, orders[status] = "Entregado" && orders[delivery_date] <= orders[promised_date]))
+
+Entregas tardías =
+COUNTROWS(FILTER(orders, orders[status] = "Entregado" && orders[delivery_date] > orders[promised_date]))
+
+% a tiempo = DIVIDE([Entregas a tiempo], [Pedidos entregados])
+
+% tardías = DIVIDE([Entregas tardías], [Pedidos entregados])
+
+Retraso medio (días, solo tardías) =
+AVERAGEX(
+    FILTER(orders, orders[status] = "Entregado" && orders[delivery_date] > orders[promised_date]),
+    DATEDIFF(orders[promised_date], orders[delivery_date], DAY)
+)
+
+Coste medio por pedido =
+CALCULATE(AVERAGE(orders[order_cost]), orders[status] <> "Cancelado")
+
+// --- Para "dónde actuar primero" ---
+% tardías global = CALCULATE([% tardías], ALL(orders), ALL(Calendario))
+
+Tardías de más =
+[Entregas tardías] - [Pedidos entregados] * [% tardías global]
+
+// --- Coste de un retraso ---
+Coste medio tardío =
+AVERAGEX(
+    FILTER(orders, orders[status] = "Entregado" && orders[delivery_date] > orders[promised_date]),
+    orders[order_cost]
+)
+
+Coste medio a tiempo =
+AVERAGEX(
+    FILTER(orders, orders[status] = "Entregado" && orders[delivery_date] <= orders[promised_date]),
+    orders[order_cost]
+)
+
+Diferencia de coste tardío vs a tiempo = [Coste medio tardío] - [Coste medio a tiempo]

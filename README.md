@@ -6,7 +6,7 @@ Todos los datos son sintéticos.
 ## Proyectos y tecnología real de cada uno
 | Proyecto | Python | SQL | JavaScript | Power BI |
 |---|---|---|---|---|
-| Operations Intelligence | genera los datos, ejecuta el análisis y valida | consultas sobre SQLite | panel interactivo y análisis de causas | no (pendiente) |
+| Operations Intelligence | genera los datos, ejecuta el análisis y valida | consultas sobre SQLite | panel interactivo y análisis de causas | dashboard de 3 páginas con medidas DAX (`medidas.dax`, `powerbi.pdf`) |
 | Simulador de picking | no | no | todo el modelo (inspirado en mi TFM en C) | no |
 | Informes automáticos | solo genera los CSV de ejemplo | no | la herramienta y la batería de pruebas | no |
 

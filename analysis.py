@@ -146,10 +146,10 @@ for name, sql_v, py_v in checks:
     ok = abs(float(sql_v) - float(py_v)) <= TOL
     report.append({"nombre": name, "sql": sql_v, "python": round(py_v, 4), "ok": ok})
     if not ok:
-        raise SystemExit(f"NO COINCIDEN: {name}: SQL={sql_v} Python={py_v}")
+        raise SystemExit(f"NO COINCIDEN: {name}: SQL={sql_v} Python={py_v} (diferencia {abs(float(sql_v) - float(py_v)):.4f} > tolerancia {TOL})")
 
 # ---------- 5. Guardar para la web ----------
-payload = {"sqlite": sqlite3.sqlite_version, "queries": queries, "checks": report}
+payload = {"sqlite": sqlite3.sqlite_version, "tolerancia": TOL, "queries": queries, "checks": report}
 (ROOT / "analysis_results.js").write_text(
     "// Generado por analysis.py: resultados reales de ejecutar queries.sql en SQLite\n"
     "window.ANALYSIS = " + json.dumps(payload, ensure_ascii=False, indent=1) + ";\n",

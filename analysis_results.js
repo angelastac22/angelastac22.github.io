@@ -1,6 +1,7 @@
 // Generado por analysis.py: resultados reales de ejecutar queries.sql en SQLite
 window.ANALYSIS = {
  "sqlite": "3.45.1",
+ "tolerancia": 0.051,
  "queries": [
   {
    "id": "kpis",
